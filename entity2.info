@@ -1,0 +1,5 @@
+name = Entity API 2
+description = Alternative to Entity API
+core = 7.x
+
+dependencies[] = xautoload
