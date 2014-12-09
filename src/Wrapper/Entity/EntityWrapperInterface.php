@@ -31,5 +31,9 @@ interface EntityWrapperInterface {
   /**
    * @return ValueWrapperInterface[]
    */
-  public function getPropertyValues();
+  function getPropertyValues();
+
+  function getFieldItems($fieldName);
+
+  function getFieldItem($fieldName, $delta = 0);
 } 

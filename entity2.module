@@ -5,8 +5,6 @@ use Drupal\entity2\Wrapper\ListValue\BasicValueListWrapper;
 use Drupal\entity2\Wrapper\ListValue\EntityReferenceListWrapper;
 use Drupal\entity2\Wrapper\Value\SingleValueWrapperInterface;
 
-xautoload()->registerModulePsr4(__FILE__, 'lib');
-
 /**
  * Dependency injection container
  *
