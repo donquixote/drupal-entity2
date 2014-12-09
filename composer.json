@@ -1,0 +1,9 @@
+{
+  "name": "Drupal 7 Entity 2",
+  "autoload-dev": {
+    "psr-4": {
+      "Drupal\\entity2\\": "src/",
+      "Drupal\\entity2\\Tests\\": "tests/src/"
+    }
+  }
+}
