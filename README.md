@@ -19,4 +19,5 @@ To run PHPUnit tests, simply run `composer install` and then `phpunit`, in the m
 The module is not finished.
 * We want more useful methods like `->getReferencedEntities($fieldName)`. On the other hand, the implementations of stuff like this should ideally live in separate classes.
 * We want to make better use of the info in `hook_property_info()` from entity module.
-* Support for properties that work like entity references. E.g. `$nodeWrapper->getReferencedEntity('author')`.
+* Support for properties that behave like entity references. E.g. `$nodeWrapper->getReferencedEntity('author')`.
+* Improve language handling. E.g. set a language for the entity wrapper, instead of passing it as an argument to each field method.
