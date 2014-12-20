@@ -24,4 +24,15 @@ abstract class AbstractServiceContainer {
     $method = 'get_' . $key;
     return $this->services[$key] = $this->$method();
   }
-} 
+
+  /**
+   * @param string $key
+   * @param object $service
+   */
+  function __set($key, $service) {
+    if (isset($this->services[$key])) {
+      throw new \RuntimeException("Service '$key' already set.");
+    }
+    $this->services[$key] = $service;
+  }
+}

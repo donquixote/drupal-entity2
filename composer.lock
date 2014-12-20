@@ -1,0 +1,49 @@
+{
+    "_readme": [
+        "This file locks the dependencies of your project to a known state",
+        "Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
+        "This file is @generated automatically"
+    ],
+    "hash": "917a14f82e069043654cd16a967d457b",
+    "packages": [],
+    "packages-dev": [
+        {
+            "name": "donquixote/treedump",
+            "version": "v0.0.0",
+            "source": {
+                "type": "git",
+                "url": "/home/lemonhead/projects/phplib/treedump",
+                "reference": "16fe5a85baa7b2e031c01882ed4337ed7f9abedc"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Donquixote\\TreeDump\\": "src/"
+                }
+            },
+            "autoload-dev": {
+                "psr-4": {
+                    "Donquixote\\TreeDump\\Tests\\": "tests/src/"
+                }
+            },
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Andreas Hennings",
+                    "email": "andreas@dqxtech.net"
+                }
+            ],
+            "description": "Library to dump trees of PHP objects and arrays.",
+            "homepage": "http://github.com/donquixote/treedump",
+            "time": "2014-12-10 22:40:50"
+        }
+    ],
+    "aliases": [],
+    "minimum-stability": "stable",
+    "stability-flags": [],
+    "prefer-stable": false,
+    "platform": [],
+    "platform-dev": []
+}

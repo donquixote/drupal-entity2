@@ -6,10 +6,10 @@ namespace Drupal\entity2\Wrapper\Value;
 
 use Drupal\entity2\Info\EntityType;
 use Drupal\entity2\Info\Property\EntityReferenceProperty;
-use Drupal\entity2\Wrapper\Entity\AbstractEntityIdWrapper;
+use Drupal\entity2\Wrapper\Entity\EntityWrapperBase;
 use Drupal\entity2\Wrapper\Entity\EntityWrapperInterface;
 
-class EntityReferenceWrapper extends AbstractEntityIdWrapper implements SingleValueWrapperInterface {
+class EntityReferenceWrapper extends EntityWrapperBase implements SingleValueWrapperInterface {
 
   /**
    * @var EntityWrapperInterface
@@ -40,10 +40,10 @@ class EntityReferenceWrapper extends AbstractEntityIdWrapper implements SingleVa
   }
 
   /**
-   * @return int
-   *   Id of the referenced entity.
+   * @return \stdClass
+   *   The entity being wrapped.
    */
-  public function getEntityId() {
-    return $this->property->extractReferencedEntityId($this->parentEntityWrapper);
+  function getEntity() {
+    // TODO: Implement getEntity() method.
   }
 }

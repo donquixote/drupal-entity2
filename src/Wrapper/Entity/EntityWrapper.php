@@ -6,7 +6,7 @@ namespace Drupal\entity2\Wrapper\Entity;
 
 use Drupal\entity2\Info\EntityType;
 
-class EntityWrapper extends AbstractEntityWrapper {
+class EntityWrapper extends EntityWrapperBase {
 
   /**
    * @var \stdClass|null

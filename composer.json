@@ -1,5 +1,14 @@
 {
   "name": "Drupal 7 Entity 2",
+  "repositories": [
+    {
+      "type": "vcs",
+      "url": "/home/lemonhead/projects/phplib/treedump"
+    }
+  ],
+  "require-dev": {
+    "donquixote/treedump": "0.0.0"
+  },
   "autoload-dev": {
     "psr-4": {
       "Drupal\\entity2\\": "src/",

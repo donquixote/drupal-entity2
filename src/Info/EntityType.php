@@ -6,7 +6,8 @@ namespace Drupal\entity2\Info;
 
 
 use Drupal\entity2\Exception\UnkownBundleException;
-
+use Drupal\entity2\Info\Field\FieldInstancesInterface;
+use Drupal\entity2\System\FieldLanguagesAlterInterface;
 
 class EntityType {
 
@@ -24,6 +25,11 @@ class EntityType {
    * @var array
    */
   protected $entityInfo;
+
+  /**
+   * @var string[]
+   */
+  protected $entityKeys;
 
   /**
    * @var array
@@ -45,16 +51,53 @@ class EntityType {
   );
 
   /**
+   * @var mixed[]
+   *   Example: array('locale' => TRUE, 'entity_translation' => array(..))
+   */
+  protected $translationHandlers;
+
+  /**
+   * @var \Drupal\entity2\Info\Field\FieldInstancesInterface
+   */
+  protected $fieldInfoInstances;
+
+  /**
+   * @var \Drupal\entity2\System\FieldLanguagesAlterInterface
+   */
+  protected $fieldLanguagesAlter;
+
+  /**
    * @param EntityTypes $entityTypes
    * @param string $typeName
    * @param array $entityInfo
    * @param array $propertyInfo
+   * @param \Drupal\entity2\Info\Field\FieldInstancesInterface $fieldInfoInstances
+   * @param \Drupal\entity2\System\FieldLanguagesAlterInterface $fieldLanguagesAlter
    */
-  function __construct(EntityTypes $entityTypes, $typeName, array $entityInfo, array $propertyInfo) {
+  function __construct(
+    EntityTypes $entityTypes,
+    $typeName,
+    array $entityInfo,
+    array $propertyInfo,
+    FieldInstancesInterface $fieldInfoInstances,
+    FieldLanguagesAlterInterface $fieldLanguagesAlter
+  ) {
     $this->entityTypes = $entityTypes;
     $this->typeName = $typeName;
     $this->entityInfo = $entityInfo;
     $this->propertyInfo = $propertyInfo;
+    $this->entityKeys = isset($entityInfo['entity keys'])
+      ? $entityInfo['entity keys']
+      : array();
+    $this->translationHandlers = isset($entityInfo['translation'])
+      ? $entityInfo['translation']
+      : array();
+    $this->fieldInfoInstances = $fieldInfoInstances;
+    $this->fieldLanguagesAlter = $fieldLanguagesAlter;
+  }
+
+  public function getEntityKeys() {
+    return $this->entityKeys;
   }
 
   /**
@@ -67,13 +110,16 @@ class EntityType {
   }
 
   /**
-   * @param \stdClass $entity
+   * @param string $bundleName
    *
+   * @throws UnkownBundleException
    * @return Bundle
    */
-  public function entityGetBundle(\stdClass $entity) {
-    $bundleName = $this->entityGetBundleName($entity);
-    return $this->getBundle($bundleName);
+  public function getBundle($bundleName) {
+
+    return isset($this->bundles[$bundleName])
+      ? $this->bundles[$bundleName]
+      : $this->bundles[$bundleName] = $this->buildBundleObject($bundleName);
   }
 
   /**
@@ -82,11 +128,7 @@ class EntityType {
    * @throws UnkownBundleException
    * @return Bundle
    */
-  public function getBundle($bundleName) {
-
-    if (isset($this->bundles[$bundleName])) {
-      return $this->bundles[$bundleName];
-    }
+  private function buildBundleObject($bundleName) {
 
     if (!isset($this->entityInfo['bundles'][$bundleName])) {
       throw new UnkownBundleException($bundleName, $this->typeName);
@@ -101,11 +143,57 @@ class EntityType {
       $propertyInfo += $this->propertyInfoDefaults;
     }
 
-    return $this->bundles[$bundleName] = new Bundle(
+    $fieldInstances = $this->fieldInfoInstances->bundleGetFieldInstances($this->typeName, $bundleName);
+
+    return new Bundle(
       $this,
       $bundleName,
       $this->entityInfo['bundles'][$bundleName],
-      $bundlePropertiesInfo);
+      $bundlePropertiesInfo,
+      $fieldInstances);
+  }
+
+  /**
+   * @param object $entity
+   *
+   * @return int|null
+   *
+   * @see entity_id()
+   */
+  public function entityGetId($entity) {
+
+    if (method_exists($entity, 'identifier')) {
+      return $entity->identifier();
+    }
+
+    $key = isset($this->entityKeys['name'])
+      ? $this->entityKeys['name']
+      : $this->entityKeys['id'];
+
+    return isset($entity->$key)
+      ? $entity->$key
+      : NULL;
+  }
+
+  /**
+   * @param object $entity
+   *
+   * @return int|null
+   */
+  public function entityGetRevisionId($entity) {
+    return ($this->entityKeys['revision'] && isset($entity->{$this->entityKeys['revision']}))
+      ? $entity->{$this->entityKeys['revision']}
+      : NULL;
+  }
+
+  /**
+   * @param \stdClass $entity
+   *
+   * @return Bundle
+   */
+  public function entityGetBundle(\stdClass $entity) {
+    $bundleName = $this->entityGetBundleName($entity);
+    return $this->getBundle($bundleName);
   }
 
   /**
@@ -117,7 +205,7 @@ class EntityType {
    * @return string
    *   The bundle name.
    */
-  protected function entityGetBundleName(\stdClass $entity) {
+  public function entityGetBundleName(\stdClass $entity) {
 
     if (empty($this->entityInfo['entity keys']['bundle'])) {
       // The entity type provides no bundle key: assume a single bundle, named
@@ -135,33 +223,6 @@ class EntityType {
     }
 
     return $entity->$bundleKey;
-  }
-
-  /**
-   * @param int $id
-   *
-   * @return \stdClass|null
-   *   The loaded entity, or NULL if none was found.
-   */
-  public function loadEntity($id) {
-    return entity_load_single($this->typeName, $id);
-  }
-
-  /**
-   * @param int $etid
-   *
-   * @return \stdClass
-   * @throws \Exception
-   */
-  public function loadRequiredEntity($etid) {
-    if (empty($etid) || (string)(int)$etid !== (string)$etid || !$etid > 0) {
-      throw new \Exception("Invalid entity id.");
-    }
-    $entity = $this->loadEntity($etid);
-    if (!$entity) {
-      throw new \Exception("No entity of type '$this->typeName' and id=$etid found.");
-    }
-    return $entity;
   }
 
   /**
@@ -183,5 +244,62 @@ class EntityType {
    */
   public function getEntityTypes() {
     return $this->entityTypes;
+  }
+
+  /**
+   * Checks if a specific translation handler is registered for this entity type.
+   *
+   * @param string $handler
+   *   The name of the handler to be checked. Defaults to NULL.
+   *   Typically this is a module name, e.g. 'locale' or 'entity_translation'.
+   *
+   * @return bool
+   *   TRUE, if the given handler is allowed to manage field translations.
+   *
+   * @see field_has_translation_handler()
+   */
+  public function hasTranslationHandler($handler) {
+    return !empty($this->translationHandlers[$handler]);
+  }
+
+  /**
+   * Checks if any translation handlers are registered for this entity type.
+   *
+   * @return bool
+   *   TRUE, if there is at least one registered translation handler.
+   *
+   * @see field_has_translation_handler()
+   */
+  public function hasAnyTranslationHandler() {
+
+    foreach ($this->translationHandlers as $handlerInfo) {
+      // The translation handler must use a non-empty data structure.
+      if (!empty($handlerInfo)) {
+        return TRUE;
+      }
+    }
+
+    return FALSE;
+  }
+
+  /**
+   * @param string[] $langFieldLanguages
+   * @param object $entity
+   * @param string $langcode
+   */
+  public function fieldLanguagesAlter(&$langFieldLanguages, $entity, $langcode) {
+    $this->fieldLanguagesAlter->fieldLanguagesAlter($langFieldLanguages, $this->typeName, $entity, $langcode);
+  }
+
+  /**
+   * @param string|null $langcode
+   * @param bool
+   *
+   * @return string
+   *
+   * @see field_valid_language()
+   */
+  public function fieldValidLanguage($langcode, $default = TRUE) {
+    return $this->fieldLanguagesAlter->fieldValidLanguage($langcode, $default);
   }
 } 

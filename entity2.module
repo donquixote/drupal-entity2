@@ -1,6 +1,7 @@
 <?php
 
 use Drupal\entity2\DIC\ServiceContainer;
+use Drupal\entity2\Util\DumpUtil;
 use Drupal\entity2\Wrapper\ListValue\BasicValueListWrapper;
 use Drupal\entity2\Wrapper\ListValue\EntityReferenceListWrapper;
 use Drupal\entity2\Wrapper\Value\SingleValueWrapperInterface;
@@ -16,49 +17,4 @@ function entity2() {
     return $services;
   }
   return $services = new ServiceContainer();
-}
-
-/**
- * Implements hook_init()
- */
-function entity2_init() {
-  if (0 === strpos($_GET['q'], 'js/admin_menu/cache/')) {
-    return;
-  }
-  # Drupal\krumong\dpm(entity2()->types);
-  # entity2()->types->initAll();
-  # Drupal\krumong\dpm(entity2()->types);
-
-  # $userWrapper = entity2()->main->wrapEntityId('user', $GLOBALS['user']->uid);
-  # $values = _entity2_extract_values($userWrapper);
-  # Drupal\krumong\dpm($values, 'user/' . $GLOBALS['user']->uid);
-
-  # return;
-
-  $nodeWrapper = entity2()->main->wrapEntityId('node', 1);
-  $values = _entity2_extract_values($nodeWrapper);
-  Drupal\krumong\dpm($values, 'node/1');
-}
-
-function _entity2_extract_values(\Drupal\entity2\Wrapper\Entity\AbstractEntityWrapper $entityWrapper) {
-  $values = array();
-  foreach ($entityWrapper->getPropertyValues() as $propertyName => $propertyValueWrapper) {
-    if ($propertyValueWrapper instanceof SingleValueWrapperInterface) {
-      $values[$propertyName] = $propertyValueWrapper->getValue();
-    }
-    elseif ($propertyValueWrapper instanceof EntityReferenceListWrapper) {
-      foreach ($propertyValueWrapper->getDeltas() as $delta) {
-        $entity = $propertyValueWrapper->offsetGet($delta)->getEntity();
-        $values[$propertyName . '[' . $delta . ']'] = $entity;
-      }
-    }
-    elseif ($propertyValueWrapper instanceof BasicValueListWrapper) {
-      foreach ($propertyValueWrapper->getDeltas() as $delta) {
-        // @todo This should return a list item wrapper which still needs to be accessed with getValue().
-        $value = $propertyValueWrapper->offsetGet($delta);
-        $values[$propertyName . '[' . $delta . ']'] = $value;
-      }
-    }
-  }
-  return $values;
 }

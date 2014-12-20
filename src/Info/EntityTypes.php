@@ -5,6 +5,8 @@ namespace Drupal\entity2\Info;
 
 
 use Drupal\entity2\Exception\UnkownEntityTypeException;
+use Drupal\entity2\Info\Field\FieldInstancesInterface;
+use Drupal\entity2\System\FieldLanguagesAlterInterface;
 
 class EntityTypes {
 
@@ -29,14 +31,35 @@ class EntityTypes {
   protected $language;
 
   /**
+   * @var \Drupal\entity2\Info\Field\FieldInstancesInterface
+   */
+  protected $fieldInfoInstances;
+
+  /**
+   * @var \Drupal\entity2\System\FieldLanguagesAlterInterface
+   */
+  protected $fieldLanguagesAlter;
+
+  /**
    * @param array $entityInfo
    * @param array $propertyInfo
    * @param \stdClass $language
+   * @param \Drupal\entity2\Info\Field\FieldInstancesInterface $fieldInfoInstances
+   * @param \Drupal\entity2\System\FieldLanguagesAlterInterface $fieldLanguagesAlter
    */
-  function __construct(array $entityInfo, array $propertyInfo, \stdClass $language) {
+  function __construct(
+    array $entityInfo,
+    array $propertyInfo,
+    \stdClass $language,
+    FieldInstancesInterface $fieldInfoInstances,
+    FieldLanguagesAlterInterface $fieldLanguagesAlter
+  ) {
     $this->entityInfo = $entityInfo;
     $this->propertyInfo = $propertyInfo;
     $this->language = $language;
+    $this->fieldInfoInstances = $fieldInfoInstances;
+    $this->fieldLanguagesAlter = $fieldLanguagesAlter;
+
   }
 
   /**
@@ -81,7 +104,9 @@ class EntityTypes {
       $this,
       $typeName,
       $this->entityInfo[$typeName],
-      $this->propertyInfo[$typeName]);
+      $this->propertyInfo[$typeName],
+      $this->fieldInfoInstances,
+      $this->fieldLanguagesAlter);
   }
 
   /**
